@@ -22,7 +22,7 @@ class _CreateRoomState extends State<CreateRoom> {
 
   @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.sizeOf(context);
+    final size = MediaQuery.sizeOf(context);
     return Scaffold(
       body: Center(
         child: Container(
@@ -47,7 +47,7 @@ class _CreateRoomState extends State<CreateRoom> {
                 controller: _nameController,
                 hintText: 'Enter your nickname',
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: size.height * 0.45),
               CustomButton(
                 onTap: () {},
                 color: Colors.white,
