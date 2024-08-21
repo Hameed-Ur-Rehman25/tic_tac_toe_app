@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 class CustomTextField extends StatelessWidget {
   final String hintText;
   final TextEditingController controller;
+  final bool isReadOnly;
   const CustomTextField({
     super.key,
     required this.hintText,
     required this.controller,
+    this.isReadOnly = false,
   });
 
   final _border = const OutlineInputBorder(
@@ -23,6 +25,7 @@ class CustomTextField extends StatelessWidget {
     return SizedBox(
       width: 350,
       child: TextField(
+        readOnly: isReadOnly,
         controller: controller,
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(15),

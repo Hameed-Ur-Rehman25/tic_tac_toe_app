@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tic_tac_toe_app/responsive/responsive.dart';
 import 'package:tic_tac_toe_app/screens/create_room.dart';
 import 'package:tic_tac_toe_app/screens/join_room.dart';
 import 'package:tic_tac_toe_app/widgets/custom_button.dart';
@@ -18,7 +19,7 @@ class MainMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Responsive(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

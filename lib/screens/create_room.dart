@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tic_tac_toe_app/resources/socket_methods.dart';
+import 'package:tic_tac_toe_app/responsive/responsive.dart';
 import 'package:tic_tac_toe_app/widgets/custom_button.dart';
 import 'package:tic_tac_toe_app/widgets/custom_text.dart';
 import 'package:tic_tac_toe_app/widgets/custom_text_field.dart';
@@ -13,6 +15,12 @@ class CreateRoom extends StatefulWidget {
 
 class _CreateRoomState extends State<CreateRoom> {
   final TextEditingController _nameController = TextEditingController();
+  final SocketMethods _socketMethods = SocketMethods();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -24,7 +32,7 @@ class _CreateRoomState extends State<CreateRoom> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
-      body: Center(
+      body: Responsive(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
@@ -42,14 +50,17 @@ class _CreateRoomState extends State<CreateRoom> {
                 fontWeight: FontWeight.bold,
                 fontSize: 70,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: size.height * 0.045),
               CustomTextField(
                 controller: _nameController,
                 hintText: 'Enter your nickname',
               ),
-              SizedBox(height: size.height * 0.45),
+              SizedBox(height: size.height * 0.045),
               CustomButton(
-                onTap: () {},
+                onTap: () {
+                  _socketMethods.createRoom(_nameController.text);
+                  _socketMethods.createRoomSuccessListener(context);
+                },
                 color: Colors.white,
                 text: 'Create',
               ),
