@@ -1,10 +1,9 @@
 
-
 # Multiplayer Tic Tac Toe
 
 ## Overview
 
-Welcome to the Multiplayer Tic Tac Toe project! This real-time multiplayer version of the classic Tic Tac Toe game allows players to create and join rooms to compete against each other. The project uses Node.js, Express, and MongoDB for the backend, with Socket.IO handling real-time communication.
+Welcome to the Multiplayer Tic Tac Toe project! This real-time multiplayer version of the classic Tic Tac Toe game allows players to create and join rooms to compete against each other. The project uses Node.js, Express, and MongoDB for the backend, with Socket.IO handling real-time communication. For state management on the client side, the Provider package is utilized.
 
 ## Features
 
@@ -12,6 +11,7 @@ Welcome to the Multiplayer Tic Tac Toe project! This real-time multiplayer versi
 - **Real-Time Gameplay:** Utilizes Socket.IO for smooth, real-time updates.
 - **User Management:** Basic user session handling for different players in various rooms.
 - **Persistent Data:** MongoDB stores game history and user data.
+- **State Management:** Implemented using the Provider package for managing application state.
 
 ## Technologies Used
 
@@ -19,6 +19,8 @@ Welcome to the Multiplayer Tic Tac Toe project! This real-time multiplayer versi
 - **Express**: Web framework for Node.js.
 - **Socket.IO**: Library for real-time, bidirectional communication.
 - **MongoDB**: NoSQL database for data storage.
+- **Provider**: State management package for Flutter.
+- **Flutter**: Framework for building natively compiled applications for mobile, web, and desktop from a single codebase.
 
 ## Installation
 
@@ -37,6 +39,12 @@ To set up the project, follow these steps:
 
    ```bash
    npm install
+   ```
+
+   For Flutter dependencies, navigate to the Flutter project directory and run:
+
+   ```bash
+   flutter pub get
    ```
 
 3. **Configure Environment Variables**
@@ -76,7 +84,25 @@ To set up the project, follow these steps:
 
    Replace `your_server_ip_address` with the IP address where your server will be running.
 
-6. **Run the Application**
+6. **Update Flutter Dependencies**
+
+   Add the Socket.IO client package to your `pubspec.yaml` file:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     socket_io_client: ^2.0.0
+     provider: ^6.1.3
+   ```
+
+   Then, run:
+
+   ```bash
+   flutter pub get
+   ```
+
+7. **Run the Application**
 
    Open a terminal, navigate to the `server` directory, and start the server with:
 
@@ -95,6 +121,8 @@ To set up the project, follow these steps:
 - **`lib/`**: Contains libraries and utilities used by the application.
   - **`resources/`**: Includes resources such as the Socket.IO client and other shared components.
     - **`socketClient.js`**: Update this file with your server’s IP address.
+
+- **`pubspec.yaml`**: Configure Flutter dependencies including `socket_io_client` and `provider` for state management.
 
 ## Usage
 
@@ -121,5 +149,4 @@ Contributions are welcome! To contribute:
 2. **Create a New Branch**
 3. **Implement Your Changes**
 4. **Submit a Pull Request**
-
 
