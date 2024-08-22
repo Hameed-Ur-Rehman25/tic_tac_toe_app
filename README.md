@@ -122,4 +122,4 @@ Contributions are welcome! To contribute:
 3. **Implement Your Changes**
 4. **Submit a Pull Request**
 
-<img width="1680" alt="Screenshot 2024-08-21 at 5 08 25 PM" src="https://github.com/user-attachments/assets/10f67215-2a92-4166-af7a-7d97d7dec420">
+
