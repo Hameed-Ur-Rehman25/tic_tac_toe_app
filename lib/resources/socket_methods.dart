@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 import 'package:tic_tac_toe_app/provider/room_data_provider.dart';
+import 'package:tic_tac_toe_app/resources/game_methods.dart';
 import 'package:tic_tac_toe_app/resources/socket_client.dart';
 import 'package:tic_tac_toe_app/screens/game_screen.dart';
 import 'package:tic_tac_toe_app/utils/utlis.dart';
 
+// Class for managing socket communications related to the game
 class SocketMethods {
   // Instance of the socket client to manage socket communications
   final _socketClient = SocketClient.instance.socket!;
+  Socket get socketClient => _socketClient;
 
   // Method to emit a request to create a new room
   void createRoom(String nickname) {
@@ -25,6 +29,17 @@ class SocketMethods {
     if (nickname.isNotEmpty && roomId.isNotEmpty) {
       _socketClient.emit('joinRoom', {
         'nickname': nickname,
+        'roomId': roomId,
+      });
+    }
+  }
+
+  // Method to emit a request when a grid cell is tapped
+  void tapGrid(int index, String roomId, List<String> displayElement) {
+    // Emit tap event only if the cell is empty
+    if (displayElement[index] == '') {
+      _socketClient.emit('tap', {
+        'index': index,
         'roomId': roomId,
       });
     }
@@ -60,17 +75,64 @@ class SocketMethods {
     });
   }
 
-  // Listener for updating the player states
+  // Listener for updating player states
   void updatePlayerStateListener(BuildContext context) {
-    print("inside update player");
     _socketClient.on('updatePlayers', (playerData) {
-      print('Received player data: $playerData');
       // Update player data in the provider
       Provider.of<RoomDataProvider>(context, listen: false)
           .updatePlayer1(playerData[0]);
-      print('player 1 updated');
       Provider.of<RoomDataProvider>(context, listen: false)
           .updatePlayer2(playerData[1]);
+    });
+  }
+
+  // Listener for updating room data
+  void updateRoomListener(BuildContext context) {
+    _socketClient.on('updateRoom', (data) {
+      // Update the room data in the provider
+      Provider.of<RoomDataProvider>(context, listen: false)
+          .updateRoomData(data);
+    });
+  }
+
+  // Listener for handling grid cell taps from other clients
+  void tappedListener(BuildContext context) {
+    _socketClient.on('tapped', (data) {
+      RoomDataProvider roomDataProvider =
+          Provider.of<RoomDataProvider>(context, listen: false);
+      // Update the board with the new move
+      roomDataProvider.updateDisplayElement(
+        data['index'],
+        data['choice'],
+      );
+      // Update the room data
+      roomDataProvider.updateRoomData(data['room']);
+      // Check if there is a winner
+      GameMethods().checkWinner(context, _socketClient);
+    });
+  }
+
+  // Listener for increasing player points
+  void pointIncreaseListener(BuildContext context) {
+    _socketClient.on('pointIncrease', (playerData) {
+      var roomDataProvider =
+          Provider.of<RoomDataProvider>(context, listen: false);
+      // Update the points for the correct player
+      if (playerData['socketId'] == roomDataProvider.player1.socketID) {
+        roomDataProvider.updatePlayer1(playerData);
+      } else {
+        roomDataProvider.updatePlayer2(playerData);
+      }
+    });
+  }
+
+  // Listener for handling end-of-game events
+  void endGameListener(BuildContext context) {
+    _socketClient.on('endGame', (playerData) {
+      // Show a dialog with the winner's information
+      showGameDialog(context, '${playerData['nickname']} won the game!');
+      // Navigate back to the initial screen
+      Navigator.popUntil(context, (route) => false);
     });
   }
 }

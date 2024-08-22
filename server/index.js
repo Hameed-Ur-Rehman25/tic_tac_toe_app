@@ -14,7 +14,8 @@ const io = require("socket.io")(server); // Initialize Socket.IO with the HTTP s
 app.use(express.json()); // Middleware to parse incoming JSON requests
 
 // MongoDB connection string
-const DB = "mongodb+srv://hameed:hameed123@cluster0.zkja9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const DB =
+  "mongodb+srv://hameed:hameed123@cluster0.zkja9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Socket.IO connection event
 io.on("connection", (socket) => {
@@ -69,15 +70,61 @@ io.on("connection", (socket) => {
         };
         socket.join(roomId); // Join the socket to the room
         room.player.push(player); // Add the player to the room
-        room.isjoin = false;
+        room.isjoin = false; // Mark the room as closed for joining
         room = await room.save(); // Save the updated room to the database
         io.to(roomId).emit("joinRoomSuccess", room); // Notify all clients in the room about the new player
-         io.to(roomId).emit('updatePlayers', room.player); // Update all clients with the current list of players
+        io.to(roomId).emit("updatePlayers", room.player); // Update all clients with the current list of players
+        io.to(roomId).emit("updateRoom", room); // Update all clients with the current room state
       } else {
         socket.emit("errorOccurred", "Game is in progress, try again later."); // Notify the client if the game is in progress
       }
     } catch (error) {
       console.log("Error joining room:", error); // Log errors if joining the room fails
+    }
+  });
+
+  // Handle 'tap' event (player taps a grid cell)
+  socket.on("tap", async ({ index, roomId }) => {
+    try {
+      let room = await Room.findById(roomId);
+      let choice = room.turn.playerType; // 'X' or 'O'
+      // Switch turn to the other player
+      if (room.turnIndex === 0) {
+        room.turn = room.player[1];
+        room.turnIndex = 1;
+      } else {
+        room.turn = room.player[0];
+        room.turnIndex = 0;
+      }
+      room = await room.save();
+
+      io.to(roomId).emit("tapped", {
+        index, // Index of the tapped grid cell
+        choice, // The player's choice ('X' or 'O')
+        room, // Current state of the room
+      });
+    } catch (error) {
+      console.log("Error Occurred in tap Listener.The Error is " + error); // Log errors if the tap event fails
+    }
+  });
+
+  // Handle 'winner' event (when a player wins)
+  socket.on("winner", async ({ winnerSocketId, roomId }) => {
+    try {
+      let room = await Room.findById(roomId);
+      let player = room.players.find(
+        (playerr) => playerr.socketId === winnerSocketId
+      );
+      player.points += 1; // Increase the winner's points
+      room = await room.save();
+
+      if (player.points >= room.maxRounds) {
+        io.to(roomId).emit("endGame", player); // Notify all clients that the game has ended
+      } else {
+        io.to(roomId).emit("pointIncrease", player); // Notify all clients of the point increase
+      }
+    } catch (e) {
+      console.log(e); // Log errors if updating the winner fails
     }
   });
 });

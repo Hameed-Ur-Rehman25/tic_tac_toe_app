@@ -4,23 +4,23 @@ const { default: mongoose } = require("mongoose");
 const playerSchema = new mongoose.Schema({
   // Nickname of the player
   nickname: {
-    type: String,
-    trim: true, // Remove whitespace from both ends
+    type: String, // Data type for nickname
+    trim: true, // Automatically removes whitespace from both ends of the string
   },
   // Unique identifier for the player's connection, provided by the MongoDB
   socketId: {
-    type: String,
-    unique: true, // Ensures that each socketId is unique in the collection
+    type: String, // Data type for socketId
+    unique: true, // Ensures that each socketId is unique in the collection to prevent duplicates
   },
   // Points associated with the player
   points: {
-    type: Number,
-    default: 0, // Default value if no points are specified
+    type: Number, // Data type for points
+    default: 0, // Default value is 0 if no points are specified
   },
-  // Type/category of the player (e.g., "beginner", "advanced")
+  // Type/category of the player (e.g., "X" or "O" in a Tic-Tac-Toe game)
   playerType: {
-    type: String,
-    required: true, // This field must be provided
+    type: String, // Data type for playerType
+    required: true, // This field is mandatory; must be provided
   },
 });
 
