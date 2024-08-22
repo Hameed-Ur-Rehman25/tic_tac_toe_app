@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor:
               backgroundColor, // Set the background color from a custom palette
-          primaryColor: Colors.blue, // Set the primary color for the app
         ),
         routes: {
           // Define the routes for navigation in the app

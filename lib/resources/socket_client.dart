@@ -9,7 +9,7 @@ class SocketClient {
   // Private constructor for initializing the Socket.IO client
   SocketClient._internal() {
     // Create a new Socket.IO client instance with specified options
-    socket = IO.io('http://192.168.100.248:3000', <String, dynamic>{
+    socket = IO.io('http://yourIPaddress:3000', <String, dynamic>{
       'transports': ['websocket'], // Use WebSocket for transport
       'autoConnect': false, // Do not automatically connect on instantiation
     });
