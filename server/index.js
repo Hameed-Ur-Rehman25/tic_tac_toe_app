@@ -3,6 +3,7 @@ const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
 const Room = require("./models/room");
+require('dotenv').config(); // Import and configure dotenv
 
 // Initialize Express app
 const app = express();
@@ -13,17 +14,13 @@ const io = require("socket.io")(server);
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
-// MongoDB connection string
-const DB = ''; //mongo db path 
-
-
+// MongoDB connection string from environment variables
+const DB = process.env.MONGODB_URI;
 
 // Error-handling middleware
 app.use((err, req, res, next) => {
-  // Log the error stack to the server console
-  console.error(err.stack);
-  // Respond with a generic error message
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error(err.stack); // Log the error stack to the server console
+  res.status(500).json({ message: 'Something went wrong!' }); // Respond with a generic error message
 });
 
 // Connect to MongoDB
@@ -36,38 +33,32 @@ server.listen(port, "0.0.0.0", () => {
   console.log("Server started and running on port " + port);
 });
 
-
 // Socket.IO connection event
 io.on("connection", (socket) => {
   console.log("A new user connected");
 
   // Handle the 'createRoom' event
   socket.on("createRoom", async ({ nickname }) => {
-    // Check if the nickname is provided
     if (!nickname) {
       socket.emit("errorOccurred", "Nickname is required.");
       return;
     }
 
     try {
-      // Create a new room
       let room = new Room();
-      // Create a new player with the given nickname
       let player = {
         nickname,
         socketId: socket.id,
-        playerType: "X", // Player type 'X'
+        playerType: "X",
       };
-      room.player.push(player); // Add the player to the room
-      room.turn = player; // Set the turn to the new player
-      room = await room.save(); // Save the room to the database
+      room.player.push(player);
+      room.turn = player;
+      room = await room.save();
 
-      // Get the room ID and emit a success message
       const roomId = room._id.toString();
       socket.join(roomId);
       io.to(roomId).emit("createRoomSuccess", room);
     } catch (error) {
-      // Log and send an error message if something goes wrong
       console.error("Error creating room:", error);
       socket.emit("errorOccurred", "Failed to create room.");
     }
@@ -75,40 +66,34 @@ io.on("connection", (socket) => {
 
   // Handle the 'joinRoom' event
   socket.on("joinRoom", async ({ nickname, roomId }) => {
-    // Validate input data
     if (!nickname || !roomId) {
       socket.emit("errorOccurred", "Nickname and Room ID are required.");
       return;
     }
 
     try {
-      // Check if the room ID format is valid
       if (!roomId.match(/^[0-9a-fA-F]{24}$/)) {
         socket.emit("errorOccurred", "Please enter a valid room ID.");
         return;
       }
 
-      // Find the room by ID
       let room = await Room.findById(roomId);
       if (!room) {
         socket.emit("errorOccurred", "Room not found.");
         return;
       }
 
-      // Check if the room is open for joining
       if (room.isjoin) {
-        // Create a new player for the joining user
         let player = {
           nickname,
           socketId: socket.id,
-          playerType: "O", // Player type 'O'
+          playerType: "O",
         };
-        socket.join(roomId); // Join the socket to the room
-        room.player.push(player); // Add the new player to the room
-        room.isjoin = false; // Set the room status to 'closed'
-        room = await room.save(); // Save the updated room
+        socket.join(roomId);
+        room.player.push(player);
+        room.isjoin = false;
+        room = await room.save();
 
-        // Emit events to notify all clients in the room
         io.to(roomId).emit("joinRoomSuccess", room);
         io.to(roomId).emit("updatePlayers", room.player);
         io.to(roomId).emit("updateRoom", room);
@@ -116,7 +101,6 @@ io.on("connection", (socket) => {
         socket.emit("errorOccurred", "Game is in progress, try again later.");
       }
     } catch (error) {
-      // Log and send an error message if something goes wrong
       console.log("Error joining room:", error);
       socket.emit("errorOccurred", "Failed to join room.");
     }
@@ -131,21 +115,17 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Determine the current player's choice
       let choice = room.turn.playerType;
-      // Switch turns
       room.turn = room.player[room.turnIndex === 0 ? 1 : 0];
       room.turnIndex = room.turnIndex === 0 ? 1 : 0;
-      room = await room.save(); // Save the updated room
+      room = await room.save();
 
-      // Emit the tapped event to all clients in the room
       io.to(roomId).emit("tapped", {
         index,
         choice,
         room,
       });
     } catch (error) {
-      // Log and send an error message if something goes wrong
       console.log("Error in tap listener:", error);
       socket.emit("errorOccurred", "Failed to process tap.");
     }
@@ -160,29 +140,23 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Find the player who won
       let player = room.player.find(playerr => playerr.socketId === winnerSocketId);
       if (!player) {
         socket.emit("errorOccurred", "Player not found.");
         return;
       }
 
-      // Update the player's points
       player.points += 1;
       room = await room.save();
 
-      // Determine if the game should end or continue
       if (player.points >= room.maxRound) {
         io.to(roomId).emit("endGame", player);
       } else {
         io.to(roomId).emit("pointIncrease", player);
       }
     } catch (error) {
-      // Log and send an error message if something goes wrong
       console.log("Error in winner event:", error);
       socket.emit("errorOccurred", "Failed to process winner.");
     }
   });
 });
-
-
